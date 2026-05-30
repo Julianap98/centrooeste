@@ -322,7 +322,11 @@ function workdaysBetween(d1, d2) {
 
 function parseDate(s) {
   if (!s||s==="-"||s==="") return null;
-  const d = new Date(s);
+  // Datas yyyy-MM-dd sao tratadas como UTC pelo JS, causando deslocamento
+  // de -3h no fuso de Brasilia. Forçamos parse local com T00:00:00.
+  const str = String(s).trim();
+  const iso = /^\d{4}-\d{2}-\d{2}$/.test(str) ? str + "T00:00:00" : str;
+  const d = new Date(iso);
   return isNaN(d)?null:d;
 }
 
