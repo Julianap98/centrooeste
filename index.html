@@ -64,7 +64,9 @@ body::after{content:'';position:fixed;inset:0;background:radial-gradient(ellipse
 .btn-clear:hover{background:rgba(255,107,107,.1);}
 
 /* KPI */
-.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:14px;margin-bottom:22px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:12px;margin-bottom:22px;}
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(4,1fr);}}
+@media(max-width:700px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
 .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 16px 16px;position:relative;overflow:hidden;backdrop-filter:blur(10px);transition:transform .2s,box-shadow .2s,border-color .2s;}
 .kpi-card:hover{transform:translateY(-2px);box-shadow:var(--glow2);border-color:rgba(111,168,191,.45);}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--kpi-color,var(--c4)),transparent);}
@@ -140,8 +142,7 @@ td{padding:10px 16px;font-size:.82rem;white-space:nowrap;}
 @media(max-width:600px){
   .topbar{padding:12px 14px;} .topbar-brand{font-size:.75rem;}
   .main{padding:12px 10px;}
-  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
-  .kpi-value{font-size:1.3rem;}
+  .kpi-value{font-size:1.1rem;}
   .charts-row{grid-template-columns:1fr;}
   .bar-lbl{width:60px;}
   th,td{padding:8px 10px;}
@@ -463,7 +464,7 @@ function renderDash() {
   const transf=d.filter(r=>r._emTransf).length;
   const pFut=d.filter(r=>r._prazoFuturo).length;
   const lts=d.filter(r=>r._lt!==null).map(r=>r._lt);
-  const lt=lts.length?(lts.reduce((a,b)=>a+b,0)/lts.length).toFixed(1):"—";
+  const lt=lts.length?Math.round(lts.reduce((a,b)=>a+b,0)/lts.length):"—";
   const slaOk=d.filter(r=>r._sla==="ok").length;
   const slaFora=d.filter(r=>r._sla==="fora").length;
   const slaT=slaOk+slaFora;
@@ -487,7 +488,7 @@ function renderDash() {
     const rows=d.filter(r=>r._mes===m);
     const e2=rows.filter(r=>r._entregue).length, p2=rows.filter(r=>r._pendente).length;
     const lt2s=rows.filter(r=>r._lt!==null).map(r=>r._lt);
-    const lt2=lt2s.length?(lt2s.reduce((a,b)=>a+b,0)/lt2s.length).toFixed(1):"—";
+    const lt2=lt2s.length?Math.round(lt2s.reduce((a,b)=>a+b,0)/lt2s.length):"—";
     return `<div class="month-card">
       <div class="month-card-title">${rows[0]?._mesLabel||m}</div>
       <div class="month-stat-row"><span class="month-stat-label">Total notas</span><span class="month-stat-value">${rows.length}</span></div>
@@ -539,7 +540,7 @@ function renderDash() {
   });
   const sr=Object.values(rm).sort((a,b)=>b.pend-a.pend).slice(0,15);
   document.getElementById("rankBody").innerHTML=sr.map((row,i)=>{
-    const lt2=row.lts.length?(row.lts.reduce((a,b)=>a+b,0)/row.lts.length).toFixed(1)+" d":"—";
+    const lt2=row.lts.length?Math.round(row.lts.reduce((a,b)=>a+b,0)/row.lts.length)+" d":"—";
     const pp=pct(row.pend,row.total);
     const bg=pp>30?"danger":pp>10?"warn":"ok";
     return `<tr>
