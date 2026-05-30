@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Painel Logístico · Centro Oeste</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&family=Exo+2:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+/* ─── TOKENS ─────────────────────────────────────────── */
+:root {
+  --c1: #113859;
+  --c2: #1D4B73;
+  --c3: #4E84A6;
+  --c4: #6FA8BF;
+  --c5: #C9F2E3;
+  --bg: #080f18;
+  --surface: rgba(17,56,89,.55);
+  --surface2: rgba(29,75,115,.4);
+  --border: rgba(111,168,191,.25);
+  --border-bright: rgba(201,242,227,.35);
+  --text: #e4f5ff;
+  --text-muted: #7eb8d4;
+  --accent: #C9F2E3;
+  --danger: #ff6b6b;
+  --warn: #ffd166;
+  --ok: #06d6a0;
+  --glow: 0 0 18px rgba(201,242,227,.18);
+  --glow2: 0 0 32px rgba(78,132,166,.4);
+  --radius: 14px;
+  --font-title: 'Orbitron', sans-serif;
+  --font-body: 'Exo 2', sans-serif;
+}
+
+/* ─── RESET ──────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font-body);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ─── GRID BACKGROUND ────────────────────────────────── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(78,132,166,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(78,132,166,.06) 1px, transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;
+  z-index:0;
+}
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% -10%, rgba(29,75,115,.55) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(17,56,89,.6) 0%, transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ─── LOGIN OVERLAY ──────────────────────────────────── */
+#loginScreen{
+  position:fixed;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  z-index:999;
+  background:radial-gradient(ellipse at center, rgba(8,15,24,.97) 0%, #080f18 100%);
+}
+.login-box{
+  position:relative;
+  background:var(--surface);
+  border:1px solid var(--border-bright);
+  border-radius:20px;
+  padding:44px 36px;
+  width:min(92vw,400px);
+  backdrop-filter:blur(20px);
+  box-shadow:var(--glow2), inset 0 1px 0 rgba(201,242,227,.1);
+  text-align:center;
+}
+.login-box::before{
+  content:'';
+  position:absolute;top:-1px;left:20%;right:20%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  border-radius:2px;
+}
+.login-logo{
+  font-family:var(--font-title);
+  font-size:1.05rem;
+  font-weight:800;
+  letter-spacing:.15em;
+  color:var(--accent);
+  text-transform:uppercase;
+  margin-bottom:6px;
+  text-shadow:0 0 20px rgba(201,242,227,.5);
+}
+.login-sub{
+  font-size:.78rem;
+  color:var(--text-muted);
+  letter-spacing:.12em;
+  margin-bottom:30px;
+  text-transform:uppercase;
+}
+.login-box label{
+  display:block;
+  text-align:left;
+  font-size:.72rem;
+  letter-spacing:.1em;
+  color:var(--c4);
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.login-box input[type=text],
+.login-box input[type=password]{
+  width:100%;
+  background:rgba(8,15,24,.6);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:.9rem;
+  padding:11px 14px;
+  margin-bottom:18px;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.login-box input:focus{
+  border-color:var(--c4);
+  box-shadow:0 0 0 3px rgba(78,132,166,.2);
+}
+.btn-login{
+  width:100%;
+  background:linear-gradient(135deg,var(--c2),var(--c3));
+  border:1px solid var(--c4);
+  border-radius:10px;
+  color:var(--accent);
+  font-family:var(--font-title);
+  font-size:.78rem;
+  font-weight:600;
+  letter-spacing:.15em;
+  padding:13px;
+  cursor:pointer;
+  text-transform:uppercase;
+  transition:all .25s;
+  box-shadow:0 4px 20px rgba(78,132,166,.3);
+}
+.btn-login:hover{
+  background:linear-gradient(135deg,var(--c3),var(--c4));
+  box-shadow:0 4px 28px rgba(78,132,166,.55);
+  transform:translateY(-1px);
+}
+.login-error{
+  margin-top:14px;
+  font-size:.8rem;
+  color:var(--danger);
+  min-height:20px;
+}
+.login-spinner{display:none;margin-top:12px;color:var(--text-muted);font-size:.78rem;}
+
+/* ─── MAIN LAYOUT ────────────────────────────────────── */
+#app{
+  display:none;
+  position:relative;z-index:1;
+  min-height:100vh;
+  padding:0 0 40px;
+}
+
+/* ─── TOPBAR ─────────────────────────────────────────── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;
+  background:rgba(8,15,24,.85);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px);
+  position:sticky;top:0;z-index:90;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.topbar-brand{
+  font-family:var(--font-title);
+  font-size:.9rem;
+  font-weight:800;
+  letter-spacing:.12em;
+  color:var(--accent);
+  text-shadow:0 0 14px rgba(201,242,227,.4);
+  white-space:nowrap;
+}
+.topbar-meta{
+  font-size:.7rem;
+  color:var(--text-muted);
+  letter-spacing:.08em;
+  text-align:right;
+  line-height:1.5;
+}
+.btn-logout{
+  background:transparent;
+  border:1px solid rgba(111,168,191,.3);
+  border-radius:7px;
+  color:var(--text-muted);
+  font-family:var(--font-body);
+  font-size:.72rem;
+  padding:6px 14px;
+  cursor:pointer;
+  letter-spacing:.08em;
+  transition:all .2s;
+}
+.btn-logout:hover{border-color:var(--danger);color:var(--danger);}
+
+/* ─── MAIN CONTENT ───────────────────────────────────── */
+.main{
+  max-width:1400px;
+  margin:0 auto;
+  padding:20px 16px;
+}
+
+/* ─── LOADING ─────────────────────────────────────────── */
+.loading-screen{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:60vh;gap:18px;
+}
+.spinner{
+  width:44px;height:44px;
+  border:3px solid rgba(111,168,191,.2);
+  border-top-color:var(--c4);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── FILTERS ────────────────────────────────────────── */
+.filters-wrap{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 20px;
+  margin-bottom:22px;
+  backdrop-filter:blur(12px);
+}
+.filters-title{
+  font-family:var(--font-title);
+  font-size:.65rem;
+  letter-spacing:.18em;
+  color:var(--c4);
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.filters-grid{
+  display:flex;flex-wrap:wrap;gap:10px;
+}
+.filter-group{
+  display:flex;flex-direction:column;gap:4px;
+  min-width:130px;
+  flex:1 1 130px;
+}
+.filter-group label{
+  font-size:.65rem;
+  letter-spacing:.1em;
+  color:var(--text-muted);
+  text-transform:uppercase;
+}
+.filter-group select{
+  background:rgba(8,15,24,.7);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:.82rem;
+  padding:8px 10px;
+  outline:none;
+  transition:border-color .2s;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236FA8BF'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  padding-right:28px;
+}
+.filter-group select:focus{border-color:var(--c4);}
+.btn-clear{
+  align-self:flex-end;
+  background:transparent;
+  border:1px solid rgba(255,107,107,.35);
+  border-radius:8px;
+  color:#ff9d9d;
+  font-size:.72rem;
+  padding:8px 16px;
+  cursor:pointer;
+  letter-spacing:.08em;
+  transition:all .2s;
+  white-space:nowrap;
+}
+.btn-clear:hover{background:rgba(255,107,107,.1);}
+
+/* ─── KPI GRID ───────────────────────────────────────── */
+.kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:14px;
+  margin-bottom:22px;
+}
+.kpi-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px 16px 16px;
+  position:relative;
+  overflow:hidden;
+  backdrop-filter:blur(10px);
+  transition:transform .2s,box-shadow .2s,border-color .2s;
+}
+.kpi-card:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--glow2);
+  border-color:rgba(111,168,191,.45);
+}
+.kpi-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--kpi-color,var(--c4)),transparent);
+}
+.kpi-icon{
+  font-size:1.3rem;
+  margin-bottom:8px;
+  filter:drop-shadow(0 0 6px var(--kpi-color,var(--c4)));
+}
+.kpi-label{
+  font-size:.62rem;
+  letter-spacing:.1em;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  line-height:1.4;
+  margin-bottom:6px;
+}
+.kpi-value{
+  font-family:var(--font-title);
+  font-size:1.6rem;
+  font-weight:800;
+  color:var(--kpi-color,var(--accent));
+  line-height:1;
+  text-shadow:0 0 16px var(--kpi-color,rgba(201,242,227,.3));
+}
+.kpi-value.sm{font-size:1.2rem;}
+.kpi-sub{
+  font-size:.68rem;
+  color:var(--text-muted);
+  margin-top:4px;
+}
+
+/* ─── SECTION TITLE ──────────────────────────────────── */
+.section-title{
+  font-family:var(--font-title);
+  font-size:.7rem;
+  letter-spacing:.2em;
+  color:var(--c4);
+  text-transform:uppercase;
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-title::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,var(--border),transparent);
+}
+
+/* ─── CHARTS ROW ─────────────────────────────────────── */
+.charts-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;
+  margin-bottom:22px;
+}
+.chart-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  backdrop-filter:blur(10px);
+}
+.chart-card-title{
+  font-size:.68rem;
+  letter-spacing:.12em;
+  color:var(--c4);
+  text-transform:uppercase;
+  margin-bottom:16px;
+}
+.bar-chart{display:flex;flex-direction:column;gap:8px;}
+.bar-row{display:flex;align-items:center;gap:10px;}
+.bar-lbl{font-size:.72rem;color:var(--text-muted);width:80px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-track{flex:1;height:18px;background:rgba(17,56,89,.6);border-radius:4px;overflow:hidden;position:relative;}
+.bar-fill{
+  height:100%;
+  border-radius:4px;
+  transition:width .6s cubic-bezier(.23,1,.32,1);
+  background:linear-gradient(90deg,var(--c2),var(--c4));
+  position:relative;
+}
+.bar-fill.danger{background:linear-gradient(90deg,#c0392b,var(--danger));}
+.bar-val{font-size:.68rem;color:var(--text);white-space:nowrap;}
+
+/* ─── SLA DONUT ──────────────────────────────────────── */
+.sla-wrap{
+  display:flex;align-items:center;gap:20px;
+  flex-wrap:wrap;
+}
+.donut-wrap{position:relative;width:120px;height:120px;flex-shrink:0;}
+.donut-wrap svg{width:100%;height:100%;}
+.donut-center{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;
+  font-family:var(--font-title);
+  font-size:1.1rem;
+  font-weight:800;
+  color:var(--ok);
+  text-shadow:0 0 12px rgba(6,214,160,.4);
+}
+.donut-center span{display:block;font-size:.55rem;font-weight:400;color:var(--text-muted);font-family:var(--font-body);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+.sla-legend{display:flex;flex-direction:column;gap:8px;}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:.75rem;}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.legend-num{font-family:var(--font-title);font-size:.85rem;font-weight:600;}
+
+/* ─── RANKING TABLE ──────────────────────────────────── */
+.rank-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  margin-bottom:22px;
+  backdrop-filter:blur(10px);
+}
+.rank-header{
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.rank-header-title{
+  font-size:.68rem;letter-spacing:.15em;color:var(--c4);text-transform:uppercase;
+}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:rgba(17,56,89,.7);}
+th{
+  padding:10px 16px;
+  font-size:.62rem;
+  letter-spacing:.12em;
+  color:var(--text-muted);
+  text-transform:uppercase;
+  text-align:left;
+  white-space:nowrap;
+  border-bottom:1px solid var(--border);
+}
+tbody tr{border-bottom:1px solid rgba(111,168,191,.07);transition:background .15s;}
+tbody tr:hover{background:rgba(78,132,166,.1);}
+td{padding:10px 16px;font-size:.82rem;white-space:nowrap;}
+.badge{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:.65rem;letter-spacing:.08em;font-weight:600;
+}
+.badge-ok{background:rgba(6,214,160,.15);color:var(--ok);border:1px solid rgba(6,214,160,.3);}
+.badge-warn{background:rgba(255,209,102,.12);color:var(--warn);border:1px solid rgba(255,209,102,.3);}
+.badge-danger{background:rgba(255,107,107,.12);color:var(--danger);border:1px solid rgba(255,107,107,.3);}
+.rank-num{
+  font-family:var(--font-title);font-size:.75rem;
+  color:var(--c4);width:28px;text-align:center;
+}
+.rank-num.top3{color:var(--accent);text-shadow:0 0 10px rgba(201,242,227,.4);}
+
+/* ─── DETAIL TABLE ───────────────────────────────────── */
+.detail-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  backdrop-filter:blur(10px);
+}
+.detail-header{
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:8px;
+}
+.detail-title{font-size:.68rem;letter-spacing:.15em;color:var(--c4);text-transform:uppercase;}
+.detail-count{font-size:.72rem;color:var(--text-muted);}
+.search-input{
+  background:rgba(8,15,24,.6);
+  border:1px solid var(--border);
+  border-radius:8px;
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:.8rem;
+  padding:7px 12px;
+  outline:none;
+  transition:border-color .2s;
+  width:min(200px,100%);
+}
+.search-input:focus{border-color:var(--c4);}
+.pagination{
+  display:flex;align-items:center;gap:6px;
+  padding:12px 16px;
+  border-top:1px solid var(--border);
+  flex-wrap:wrap;
+}
+.page-btn{
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:6px;
+  color:var(--text-muted);
+  font-size:.72rem;
+  padding:5px 10px;
+  cursor:pointer;
+  transition:all .2s;
+}
+.page-btn:hover,.page-btn.active{
+  border-color:var(--c4);color:var(--text);background:rgba(78,132,166,.15);
+}
+.page-info{font-size:.7rem;color:var(--text-muted);margin-left:auto;}
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media(max-width:600px){
+  .topbar{padding:12px 14px;}
+  .topbar-brand{font-size:.75rem;}
+  .main{padding:12px 10px;}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .kpi-value{font-size:1.3rem;}
+  .charts-row{grid-template-columns:1fr;}
+  .bar-lbl{width:60px;}
+  th,td{padding:8px 10px;}
+}
+
+/* ─── PULSE ANIMATION ────────────────────────────────── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.pulse{animation:pulse 2s ease-in-out infinite;}
+
+/* ─── SCANLINE EFFECT ────────────────────────────────── */
+.topbar-brand::after{
+  content:'';
+  display:inline-block;width:2px;height:.9em;
+  background:var(--accent);
+  margin-left:4px;
+  vertical-align:middle;
+  animation:pulse 1s steps(1) infinite;
+}
+
+/* ─── MONTH TABS ─────────────────────────────────────── */
+.month-overview{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;
+  margin-bottom:22px;
+}
+.month-card{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px 18px;
+  backdrop-filter:blur(10px);
+}
+.month-card-title{
+  font-family:var(--font-title);
+  font-size:.72rem;
+  letter-spacing:.15em;
+  color:var(--c4);
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.month-stat-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:5px 0;
+  border-bottom:1px solid rgba(111,168,191,.08);
+}
+.month-stat-row:last-child{border:none;}
+.month-stat-label{font-size:.73rem;color:var(--text-muted);}
+.month-stat-value{font-family:var(--font-title);font-size:.9rem;color:var(--text);}
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN ════════════════════════════════════════════ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">LogTrack · Centro Oeste</div>
+    <div class="login-sub">Painel de Acompanhamento Logístico</div>
+    <label for="loginUser">Usuário</label>
+    <input type="text" id="loginUser" placeholder="Digite seu usuário" autocomplete="username"/>
+    <label for="loginPass">Senha</label>
+    <input type="password" id="loginPass" placeholder="Digite sua senha" autocomplete="current-password"/>
+    <button class="btn-login" id="btnLogin">ACESSAR SISTEMA</button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-spinner" id="loginSpinner">⟳ Autenticando...</div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══════════════════════════════════════════════ -->
+<div id="app">
+
+  <div class="topbar">
+    <div class="topbar-brand">LogTrack · Centro Oeste</div>
+    <div class="topbar-meta" id="topbarMeta">Carregando dados...</div>
+    <button class="btn-logout" id="btnLogout">Sair ↗</button>
+  </div>
+
+  <div class="main">
+
+    <!-- LOADING -->
+    <div class="loading-screen" id="loadingScreen">
+      <div class="spinner"></div>
+      <div style="font-size:.8rem;color:var(--text-muted);letter-spacing:.1em;">SINCRONIZANDO DADOS</div>
+    </div>
+
+    <!-- DASHBOARD CONTENT -->
+    <div id="dashContent" style="display:none">
+
+      <!-- FILTROS -->
+      <div class="filters-wrap">
+        <div class="filters-title">⚙ Filtros</div>
+        <div class="filters-grid">
+          <div class="filter-group">
+            <label>Mês</label>
+            <select id="filtMes"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group">
+            <label>Estado (UF)</label>
+            <select id="filtUF"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group">
+            <label>Cidade</label>
+            <select id="filtCidade"><option value="">Todas</option></select>
+          </div>
+          <div class="filter-group">
+            <label>Responsável (CCare)</label>
+            <select id="filtResp"><option value="">Todos</option></select>
+          </div>
+          <div class="filter-group" style="justify-content:flex-end;">
+            <button class="btn-clear" id="btnClear">✕ Limpar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="section-title">Indicadores Gerais</div>
+      <div class="kpi-grid" id="kpiGrid">
+        <div class="kpi-card" style="--kpi-color:#C9F2E3">
+          <div class="kpi-icon">📦</div>
+          <div class="kpi-label">Notas Acompanhadas</div>
+          <div class="kpi-value" id="kpiTotal">—</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#06d6a0">
+          <div class="kpi-icon">✅</div>
+          <div class="kpi-label">Notas Entregues</div>
+          <div class="kpi-value" id="kpiEntregues">—</div>
+          <div class="kpi-sub" id="kpiEntreguesPct"></div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#ffd166">
+          <div class="kpi-icon">⏳</div>
+          <div class="kpi-label">Notas Pendentes</div>
+          <div class="kpi-value" id="kpiPendentes">—</div>
+          <div class="kpi-sub" id="kpiPendentesPct"></div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#6FA8BF">
+          <div class="kpi-icon">🔄</div>
+          <div class="kpi-label">Em Transferência</div>
+          <div class="kpi-value" id="kpiTransf">—</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#4E84A6">
+          <div class="kpi-icon">📅</div>
+          <div class="kpi-label">Prazo Futuro</div>
+          <div class="kpi-value" id="kpiPrazoFuturo">—</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#C9F2E3">
+          <div class="kpi-icon">⚡</div>
+          <div class="kpi-label">Lead Time Médio</div>
+          <div class="kpi-value sm" id="kpiLeadTime">—</div>
+          <div class="kpi-sub">dias úteis</div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#06d6a0">
+          <div class="kpi-icon">🎯</div>
+          <div class="kpi-label">SLA No Prazo</div>
+          <div class="kpi-value" id="kpiSlaOk">—</div>
+          <div class="kpi-sub" id="kpiSlaOkPct"></div>
+        </div>
+        <div class="kpi-card" style="--kpi-color:#ff6b6b">
+          <div class="kpi-icon">⚠️</div>
+          <div class="kpi-label">SLA Fora do Prazo</div>
+          <div class="kpi-value" id="kpiSlaFora">—</div>
+          <div class="kpi-sub" id="kpiSlaForaPct"></div>
+        </div>
+      </div>
+
+      <!-- POR MÊS -->
+      <div class="section-title">Resumo por Mês</div>
+      <div class="month-overview" id="monthOverview"></div>
+
+      <!-- CHARTS -->
+      <div class="section-title">Análise Visual</div>
+      <div class="charts-row">
+
+        <!-- SLA DONUT -->
+        <div class="chart-card">
+          <div class="chart-card-title">SLA · Dentro vs Fora do Prazo</div>
+          <div class="sla-wrap">
+            <div class="donut-wrap">
+              <svg viewBox="0 0 36 36" id="donutSvg">
+                <circle cx="18" cy="18" r="15.9155" fill="none" stroke="rgba(255,107,107,.2)" stroke-width="3"/>
+                <circle cx="18" cy="18" r="15.9155" fill="none"
+                  stroke="var(--ok)" stroke-width="3"
+                  stroke-dasharray="100 0"
+                  stroke-dashoffset="25"
+                  id="donutOk"
+                  style="transition:stroke-dasharray .8s ease"/>
+              </svg>
+              <div class="donut-center" id="donutPct">—%<span>no prazo</span></div>
+            </div>
+            <div class="sla-legend">
+              <div class="legend-item">
+                <div class="legend-dot" style="background:var(--ok)"></div>
+                <span style="color:var(--text-muted)">No prazo&nbsp;</span>
+                <span class="legend-num" style="color:var(--ok)" id="lgSlaOk">—</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background:var(--danger)"></div>
+                <span style="color:var(--text-muted)">Fora do prazo&nbsp;</span>
+                <span class="legend-num" style="color:var(--danger)" id="lgSlaFora">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TOP CIDADES PENDENTES -->
+        <div class="chart-card">
+          <div class="chart-card-title">Top Cidades · Entregas Pendentes</div>
+          <div class="bar-chart" id="barCidades"></div>
+        </div>
+
+        <!-- NOTAS POR MÊS -->
+        <div class="chart-card">
+          <div class="chart-card-title">Volume por Mês · Entregues vs Pendentes</div>
+          <div class="bar-chart" id="barMeses"></div>
+        </div>
+
+      </div>
+
+      <!-- RANKING CIDADES -->
+      <div class="section-title">Ranking de Pendências por Cidade</div>
+      <div class="rank-card">
+        <div class="rank-header">
+          <div class="rank-header-title">Cidades com maiores pendências</div>
+        </div>
+        <div class="table-wrap">
+          <table id="rankTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Cidade</th>
+                <th>UF</th>
+                <th>Pendentes</th>
+                <th>Total</th>
+                <th>% Pendente</th>
+                <th>Lead Time</th>
+              </tr>
+            </thead>
+            <tbody id="rankBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABELA DETALHADA -->
+      <div class="section-title">Detalhamento das Notas</div>
+      <div class="detail-card">
+        <div class="detail-header">
+          <div class="detail-title">Notas Fiscais</div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <input class="search-input" type="text" id="searchInput" placeholder="🔍 Buscar nota, cliente, cidade..."/>
+            <div class="detail-count" id="detailCount"></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nota</th>
+                <th>Emissão</th>
+                <th>Cliente</th>
+                <th>Cidade</th>
+                <th>UF</th>
+                <th>Finalização</th>
+                <th>Lead Time</th>
+                <th>Ocorrência</th>
+                <th>SLA</th>
+                <th>Prazo Entrega</th>
+                <th>Responsável</th>
+              </tr>
+            </thead>
+            <tbody id="detailBody"></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
+      </div>
+
+    </div><!-- /dashContent -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<script>
+// ──────────────────────────────────────────────────────────
+// CONFIG  ← ALTERE A URL DO SEU WEB APP AQUI
+// ──────────────────────────────────────────────────────────
+const API_URL = "https://script.google.com/macros/s/SEU_DEPLOYMENT_ID_AQUI/exec";
+
+// ──────────────────────────────────────────────────────────
+// STATE
+// ──────────────────────────────────────────────────────────
+let ALL_RECORDS = [];
+let FILTERED = [];
+let token = sessionStorage.getItem("lt_token") || "";
+let PAGE = 1;
+const PAGE_SIZE = 50;
+
+// ──────────────────────────────────────────────────────────
+// FERIADOS NACIONAIS 2026 (simplificado)
+// ──────────────────────────────────────────────────────────
+const FERIADOS_2026 = new Set([
+  "2026-01-01","2026-04-03","2026-04-05","2026-04-21",
+  "2026-05-01","2026-06-04","2026-09-07","2026-10-12",
+  "2026-11-02","2026-11-15","2026-11-20","2026-12-25"
+]);
+
+function isWorkday(date) {
+  const d = new Date(date);
+  const dow = d.getDay();
+  if (dow === 0 || dow === 6) return false;
+  const iso = d.toISOString().substring(0,10);
+  return !FERIADOS_2026.has(iso);
+}
+
+function workdaysBetween(d1, d2) {
+  if (!d1 || !d2) return null;
+  const start = new Date(d1 < d2 ? d1 : d2);
+  const end = new Date(d1 < d2 ? d2 : d1);
+  let count = 0;
+  const cur = new Date(start);
+  while (cur <= end) {
+    if (isWorkday(cur)) count++;
+    cur.setDate(cur.getDate()+1);
+  }
+  return count;
+}
+
+function parseDate(s) {
+  if (!s || s === "-") return null;
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function fmtDate(s) {
+  const d = parseDate(s);
+  if (!d) return "—";
+  return d.toLocaleDateString("pt-BR");
+}
+
+// ──────────────────────────────────────────────────────────
+// AUTH
+// ──────────────────────────────────────────────────────────
+document.getElementById("loginPass").addEventListener("keydown", e => {
+  if (e.key === "Enter") doLogin();
+});
+document.getElementById("btnLogin").addEventListener("click", doLogin);
+document.getElementById("btnLogout").addEventListener("click", () => {
+  sessionStorage.removeItem("lt_token");
+  location.reload();
+});
+
+async function doLogin() {
+  const user = document.getElementById("loginUser").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  const err = document.getElementById("loginError");
+  const spin = document.getElementById("loginSpinner");
+  err.textContent = "";
+  spin.style.display = "block";
+  try {
+    const url = `${API_URL}?action=login&user=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.ok) {
+      token = data.token;
+      sessionStorage.setItem("lt_token", token);
+      document.getElementById("loginScreen").style.display = "none";
+      document.getElementById("app").style.display = "block";
+      loadData();
+    } else {
+      err.textContent = data.error || "Credenciais inválidas.";
+    }
+  } catch(e) {
+    err.textContent = "Erro de conexão com o servidor.";
+  }
+  spin.style.display = "none";
+}
+
+// Auto-login se já tem token
+if (token) {
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  loadData();
+}
+
+// ──────────────────────────────────────────────────────────
+// LOAD DATA
+// ──────────────────────────────────────────────────────────
+async function loadData() {
+  document.getElementById("loadingScreen").style.display = "flex";
+  document.getElementById("dashContent").style.display = "none";
+  try {
+    const url = `${API_URL}?action=data&token=${encodeURIComponent(token)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.unauthorized) {
+      sessionStorage.removeItem("lt_token");
+      location.reload(); return;
+    }
+    ALL_RECORDS = processRecords(data.records || []);
+    const lastUpdate = new Date().toLocaleString("pt-BR");
+    document.getElementById("topbarMeta").textContent = `${ALL_RECORDS.length} registros · Atualizado ${lastUpdate}`;
+    buildFilters();
+    applyFilters();
+    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("dashContent").style.display = "block";
+  } catch(e) {
+    document.getElementById("loadingScreen").innerHTML =
+      `<div style="color:var(--danger);text-align:center">
+        <div style="font-size:1.4rem;margin-bottom:8px">⚠</div>
+        <div>Erro ao carregar dados.</div>
+        <div style="font-size:.75rem;color:var(--text-muted);margin-top:6px">${e.message}</div>
+       </div>`;
+  }
+}
+
+function processRecords(raw) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  return raw.map(r => {
+    const emissao = parseDate(r["Data Emissão Nota Fiscal"]);
+    const finalizacao = parseDate(r["Data Finalização Comprovei"]);
+    const prazoSLA = parseDate(r["Prazo SLA Comprovei"]);
+    const prazoEntrega = parseDate(r["Prazo Entrega Comprovei"]);
+    const ocorr = (r["Ult. Ocorrência Comprovei"] || "").trim();
+
+    const ENTREGUE_OCORR = ["Entrega normal","Entrega Normal (Nova foto)","Entrega - Outros","Entrega Parcial"];
+    const entregue = ENTREGUE_OCORR.includes(ocorr);
+    const pendente = !entregue;
+    const emTransf = ocorr === "Transferência Realizada";
+    const prazoFuturo = prazoEntrega && prazoEntrega > today && pendente;
+
+    const leadTime = (emissao && finalizacao) ? workdaysBetween(emissao, finalizacao) : null;
+
+    // SLA: entregues comparados com prazoSLA
+    let slaStatus = null;
+    if (entregue && finalizacao && prazoSLA) {
+      slaStatus = finalizacao <= prazoSLA ? "ok" : "fora";
+    } else if (pendente && prazoSLA) {
+      slaStatus = today <= prazoSLA ? "ok" : "fora";
+    }
+
+    const mes = emissao ? `${emissao.getFullYear()}-${String(emissao.getMonth()+1).padStart(2,"0")}` : "";
+    const mesLabel = emissao ? emissao.toLocaleDateString("pt-BR",{month:"long",year:"numeric"}) : "";
+
+    return {
+      ...r,
+      _emissao: emissao,
+      _finalizacao: finalizacao,
+      _prazoSLA: prazoSLA,
+      _prazoEntrega: prazoEntrega,
+      _entregue: entregue,
+      _pendente: pendente,
+      _emTransf: emTransf,
+      _prazoFuturo: prazoFuturo,
+      _leadTime: leadTime,
+      _sla: slaStatus,
+      _mes: mes,
+      _mesLabel: mesLabel
+    };
+  });
+}
+
+// ──────────────────────────────────────────────────────────
+// FILTERS
+// ──────────────────────────────────────────────────────────
+function buildFilters() {
+  const meses = [...new Set(ALL_RECORDS.map(r=>r._mes).filter(Boolean))].sort();
+  const ufs = [...new Set(ALL_RECORDS.map(r=>r["UF Cliente"]).filter(Boolean))].sort();
+  const cidades = [...new Set(ALL_RECORDS.map(r=>r["Cidade Cliente"]).filter(Boolean))].sort();
+  const resps = [...new Set(ALL_RECORDS.map(r=>r["Responsável Cliente (CCare)"]).filter(Boolean))].sort();
+
+  fillSelect("filtMes", meses.map(m => {
+    const d = new Date(m+"-01");
+    return {v:m, l:d.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})};
+  }));
+  fillSelect("filtUF", ufs.map(v=>({v,l:v})));
+  fillSelect("filtCidade", cidades.map(v=>({v,l:v})));
+  fillSelect("filtResp", resps.map(v=>({v,l:v})));
+
+  ["filtMes","filtUF","filtCidade","filtResp"].forEach(id=>
+    document.getElementById(id).addEventListener("change", ()=>{PAGE=1;applyFilters();})
+  );
+  document.getElementById("btnClear").addEventListener("click",()=>{
+    ["filtMes","filtUF","filtCidade","filtResp"].forEach(id=>document.getElementById(id).value="");
+    PAGE=1;applyFilters();
+  });
+  document.getElementById("searchInput").addEventListener("input",()=>{PAGE=1;renderTable();});
+}
+
+function fillSelect(id, opts) {
+  const sel = document.getElementById(id);
+  opts.forEach(o=>{
+    const op = document.createElement("option");
+    op.value=o.v; op.textContent=o.l; sel.appendChild(op);
+  });
+}
+
+function applyFilters() {
+  const mes = document.getElementById("filtMes").value;
+  const uf = document.getElementById("filtUF").value;
+  const cidade = document.getElementById("filtCidade").value;
+  const resp = document.getElementById("filtResp").value;
+  FILTERED = ALL_RECORDS.filter(r =>
+    (!mes || r._mes === mes) &&
+    (!uf || r["UF Cliente"] === uf) &&
+    (!cidade || r["Cidade Cliente"] === cidade) &&
+    (!resp || r["Responsável Cliente (CCare)"] === resp)
+  );
+  renderDash();
+}
+
+// ──────────────────────────────────────────────────────────
+// RENDER DASHBOARD
+// ──────────────────────────────────────────────────────────
+function renderDash() {
+  const d = FILTERED;
+  const total = d.length;
+  const entregues = d.filter(r=>r._entregue).length;
+  const pendentes = d.filter(r=>r._pendente).length;
+  const transf = d.filter(r=>r._emTransf).length;
+  const prazoFut = d.filter(r=>r._prazoFuturo).length;
+
+  const ltVals = d.filter(r=>r._leadTime!==null).map(r=>r._leadTime);
+  const lt = ltVals.length ? (ltVals.reduce((a,b)=>a+b,0)/ltVals.length).toFixed(1) : "—";
+
+  const slaOk = d.filter(r=>r._sla==="ok").length;
+  const slaFora = d.filter(r=>r._sla==="fora").length;
+  const slaTotal = slaOk + slaFora;
+
+  // KPIs
+  set("kpiTotal", total);
+  set("kpiEntregues", entregues);
+  set("kpiEntreguesPct", total ? `${pct(entregues,total)}% do total` : "");
+  set("kpiPendentes", pendentes);
+  set("kpiPendentesPct", total ? `${pct(pendentes,total)}% do total` : "");
+  set("kpiTransf", transf);
+  set("kpiPrazoFuturo", prazoFut);
+  set("kpiLeadTime", lt === "—" ? "—" : lt);
+  set("kpiSlaOk", slaOk);
+  set("kpiSlaOkPct", slaTotal ? `${pct(slaOk,slaTotal)}% das avaliadas` : "");
+  set("kpiSlaFora", slaFora);
+  set("kpiSlaForaPct", slaTotal ? `${pct(slaFora,slaTotal)}% das avaliadas` : "");
+
+  // SLA donut
+  const pctOk = slaTotal ? Math.round(slaOk/slaTotal*100) : 0;
+  document.getElementById("donutOk").setAttribute("stroke-dasharray", `${pctOk} ${100-pctOk}`);
+  set("donutPct", pctOk+"%");
+  document.getElementById("donutPct").innerHTML = pctOk+'%<span>no prazo</span>';
+  set("lgSlaOk", slaOk);
+  set("lgSlaFora", slaFora);
+
+  // Meses
+  renderMonthOverview(d);
+
+  // Bar cidades pendentes
+  renderBarCidades(d);
+
+  // Bar meses
+  renderBarMeses(d);
+
+  // Ranking
+  renderRanking(d);
+
+  // Tabela
+  PAGE = 1;
+  renderTable();
+}
+
+function set(id, v) { document.getElementById(id).textContent = v; }
+function pct(n, t) { return t ? Math.round(n/t*100) : 0; }
+
+function renderMonthOverview(d) {
+  const meses = [...new Set(d.map(r=>r._mes).filter(Boolean))].sort();
+  const html = meses.map(m => {
+    const rows = d.filter(r=>r._mes===m);
+    const label = rows[0]?._mesLabel || m;
+    const ent = rows.filter(r=>r._entregue).length;
+    const pend = rows.filter(r=>r._pendente).length;
+    const lts = rows.filter(r=>r._leadTime!==null).map(r=>r._leadTime);
+    const lt = lts.length ? (lts.reduce((a,b)=>a+b,0)/lts.length).toFixed(1) : "—";
+    return `<div class="month-card">
+      <div class="month-card-title">${label}</div>
+      <div class="month-stat-row"><span class="month-stat-label">Total notas</span><span class="month-stat-value">${rows.length}</span></div>
+      <div class="month-stat-row"><span class="month-stat-label">Entregues</span><span class="month-stat-value" style="color:var(--ok)">${ent}</span></div>
+      <div class="month-stat-row"><span class="month-stat-label">Pendentes</span><span class="month-stat-value" style="color:var(--warn)">${pend}</span></div>
+      <div class="month-stat-row"><span class="month-stat-label">Lead Time médio</span><span class="month-stat-value">${lt} dias</span></div>
+    </div>`;
+  }).join("");
+  document.getElementById("monthOverview").innerHTML = html || '<div style="color:var(--text-muted);font-size:.8rem">Sem dados</div>';
+}
+
+function renderBarCidades(d) {
+  const map = {};
+  d.filter(r=>r._pendente).forEach(r=>{
+    const c = r["Cidade Cliente"] || "N/I";
+    map[c] = (map[c]||0)+1;
+  });
+  const sorted = Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const max = sorted[0]?.[1] || 1;
+  document.getElementById("barCidades").innerHTML = sorted.map(([c,n])=>`
+    <div class="bar-row">
+      <div class="bar-lbl" title="${c}">${c}</div>
+      <div class="bar-track"><div class="bar-fill danger" style="width:${Math.round(n/max*100)}%"></div></div>
+      <div class="bar-val">${n}</div>
+    </div>`).join("") || '<div style="color:var(--text-muted);font-size:.78rem">Sem pendências</div>';
+}
+
+function renderBarMeses(d) {
+  const meses = [...new Set(d.map(r=>r._mes).filter(Boolean))].sort();
+  const max = meses.length ? Math.max(...meses.map(m=>{
+    const rows = d.filter(r=>r._mes===m);
+    return rows.length;
+  })) : 1;
+  document.getElementById("barMeses").innerHTML = meses.map(m=>{
+    const rows = d.filter(r=>r._mes===m);
+    const ent = rows.filter(r=>r._entregue).length;
+    const pend = rows.filter(r=>r._pendente).length;
+    const label = rows[0]?._mesLabel || m;
+    const shortLabel = label.substring(0,3).toUpperCase();
+    return `
+    <div style="margin-bottom:8px">
+      <div style="font-size:.65rem;color:var(--text-muted);margin-bottom:4px;letter-spacing:.08em">${label}</div>
+      <div class="bar-row" style="margin-bottom:3px">
+        <div class="bar-lbl" style="color:var(--ok);width:70px">Entregues</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(ent/max*100)}%;background:linear-gradient(90deg,#0a6657,var(--ok))"></div></div>
+        <div class="bar-val">${ent}</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-lbl" style="color:var(--warn);width:70px">Pendentes</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(pend/max*100)}%;background:linear-gradient(90deg,#7a5a00,var(--warn))"></div></div>
+        <div class="bar-val">${pend}</div>
+      </div>
+    </div>`;
+  }).join("") || '<div style="color:var(--text-muted);font-size:.78rem">Sem dados</div>';
+}
+
+function renderRanking(d) {
+  const map = {};
+  d.forEach(r => {
+    const key = r["Cidade Cliente"] + "|" + r["UF Cliente"];
+    if (!map[key]) map[key] = {cidade:r["Cidade Cliente"],uf:r["UF Cliente"],total:0,pend:0,lts:[]};
+    map[key].total++;
+    if (r._pendente) map[key].pend++;
+    if (r._leadTime !== null) map[key].lts.push(r._leadTime);
+  });
+  const sorted = Object.values(map).sort((a,b)=>b.pend-a.pend).slice(0,15);
+  document.getElementById("rankBody").innerHTML = sorted.map((row,i)=>{
+    const lt = row.lts.length ? (row.lts.reduce((a,b)=>a+b,0)/row.lts.length).toFixed(1)+" d" : "—";
+    const p = pct(row.pend, row.total);
+    const badge = p > 30 ? "danger" : p > 10 ? "warn" : "ok";
+    return `<tr>
+      <td><div class="rank-num ${i<3?'top3':''}">${i+1}</div></td>
+      <td>${row.cidade}</td>
+      <td>${row.uf}</td>
+      <td style="color:var(--warn);font-weight:600">${row.pend}</td>
+      <td>${row.total}</td>
+      <td><span class="badge badge-${badge}">${p}%</span></td>
+      <td>${lt}</td>
+    </tr>`;
+  }).join("") || '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:20px">Sem dados</td></tr>';
+}
+
+function renderTable() {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  let rows = FILTERED;
+  if (search) {
+    rows = rows.filter(r =>
+      (r["Nota Fiscal"]||"").toString().toLowerCase().includes(search) ||
+      (r["Cliente"]||"").toLowerCase().includes(search) ||
+      (r["Cidade Cliente"]||"").toLowerCase().includes(search) ||
+      (r["UF Cliente"]||"").toLowerCase().includes(search)
+    );
+  }
+  const total = rows.length;
+  const pages = Math.ceil(total/PAGE_SIZE)||1;
+  PAGE = Math.min(PAGE, pages);
+  const slice = rows.slice((PAGE-1)*PAGE_SIZE, PAGE*PAGE_SIZE);
+
+  document.getElementById("detailCount").textContent = `${total} registros`;
+  document.getElementById("detailBody").innerHTML = slice.map(r=>{
+    const sla = r._sla === "ok"
+      ? '<span class="badge badge-ok">No prazo</span>'
+      : r._sla === "fora"
+        ? '<span class="badge badge-danger">Fora do prazo</span>'
+        : '<span class="badge badge-warn">N/A</span>';
+    const lt = r._leadTime !== null ? r._leadTime+" d" : "—";
+    const ocorrClass = r._entregue ? "style='color:var(--ok)'" : r._emTransf ? "style='color:var(--c4)'" : "style='color:var(--warn)'";
+    return `<tr>
+      <td style="font-family:var(--font-title);font-size:.78rem">${r["Nota Fiscal"]||"—"}</td>
+      <td>${fmtDate(r["Data Emissão Nota Fiscal"])}</td>
+      <td>${r["Cliente"]||"—"}</td>
+      <td>${r["Cidade Cliente"]||"—"}</td>
+      <td>${r["UF Cliente"]||"—"}</td>
+      <td>${fmtDate(r["Data Finalização Comprovei"])}</td>
+      <td style="font-family:var(--font-title);font-size:.78rem">${lt}</td>
+      <td ${ocorrClass}>${r["Ult. Ocorrência Comprovei"]||"—"}</td>
+      <td>${sla}</td>
+      <td>${fmtDate(r["Prazo Entrega Comprovei"])}</td>
+      <td>${r["Responsável Cliente (CCare)"]||"—"}</td>
+    </tr>`;
+  }).join("") || '<tr><td colspan="11" style="text-align:center;color:var(--text-muted);padding:24px">Nenhum registro</td></tr>';
+
+  // Pagination
+  const pag = document.getElementById("pagination");
+  let btns = "";
+  if (pages > 1) {
+    btns += `<button class="page-btn" onclick="goPage(1)">«</button>`;
+    btns += `<button class="page-btn" onclick="goPage(${PAGE-1})">‹</button>`;
+    const start = Math.max(1, PAGE-2), end = Math.min(pages, PAGE+2);
+    for (let p=start;p<=end;p++) {
+      btns += `<button class="page-btn ${p===PAGE?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    }
+    btns += `<button class="page-btn" onclick="goPage(${PAGE+1})">›</button>`;
+    btns += `<button class="page-btn" onclick="goPage(${pages})">»</button>`;
+  }
+  pag.innerHTML = btns + `<div class="page-info">Página ${PAGE} de ${pages} · ${total} registros</div>`;
+}
+
+function goPage(p) {
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  let rows = FILTERED;
+  if (search) rows = rows.filter(r =>
+    (r["Nota Fiscal"]||"").toString().toLowerCase().includes(search) ||
+    (r["Cliente"]||"").toLowerCase().includes(search) ||
+    (r["Cidade Cliente"]||"").toLowerCase().includes(search) ||
+    (r["UF Cliente"]||"").toLowerCase().includes(search)
+  );
+  const pages = Math.ceil(rows.length/PAGE_SIZE)||1;
+  PAGE = Math.max(1, Math.min(p, pages));
+  renderTable();
+  document.querySelector(".detail-card")?.scrollIntoView({behavior:"smooth"});
+}
+</script>
+</body>
+</html>
